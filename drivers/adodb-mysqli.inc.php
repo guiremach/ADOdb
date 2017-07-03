@@ -621,13 +621,14 @@ class ADODB_mysqli extends ADOConnection {
 
 		$matches = array();
 
-		if (!preg_match_all("/FOREIGN KEY \(`(.*?)`\) REFERENCES `(.*?)` \(`(.*?)`\)/", $create_sql, $matches)) return false;
+		if (!preg_match_all("/CONSTRAINT `(.*?)` FOREIGN KEY \(`(.*?)`\) REFERENCES `(.*?)` \(`(.*?)`\)/", $create_sql, $matches)) return false;
 		$foreign_keys = array();
 		$num_keys = count($matches[0]);
 		for ( $i = 0; $i < $num_keys; $i ++ ) {
-			$my_field  = explode('`, `', $matches[1][$i]);
-			$ref_table = $matches[2][$i];
-			$ref_field = explode('`, `', $matches[3][$i]);
+			$fk_name  = $matches[1][$i];
+			$my_field  = explode('`, `', $matches[2][$i]);
+			$ref_table = $matches[3][$i];
+			$ref_field = explode('`, `', $matches[4][$i]);
 
 			if ( $upper ) {
 				$ref_table = strtoupper($ref_table);
@@ -640,9 +641,9 @@ class ADODB_mysqli extends ADOConnection {
 			$num_fields = count($my_field);
 			for ( $j = 0; $j < $num_fields; $j ++ ) {
 				if ( $associative ) {
-					$foreign_keys[$ref_table][$ref_field[$j]] = $my_field[$j];
+					$foreign_keys[$ref_table][$fk_name][$ref_field[$j]] = $my_field[$j];
 				} else {
-					$foreign_keys[$ref_table][] = "{$my_field[$j]}={$ref_field[$j]}";
+					$foreign_keys[$ref_table][$fk_name][] = "{$my_field[$j]}={$ref_field[$j]}";
 				}
 			}
 		}
